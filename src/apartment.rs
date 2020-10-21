@@ -32,6 +32,25 @@ impl Directions {
 
         i32::from(num_floors_up as u16) - i32::from(num_floors_down as u16)
     }
+
+    pub fn first_basement_pos(&self) -> usize {
+        let mut current_floor = 0;
+        let mut basement_idx = 0;
+
+        for (current_idx, instruction) in self.instructions.iter().enumerate() {
+            match instruction {
+                Instruction::Up => current_floor += 1,
+                Instruction::Down => current_floor -= 1,
+            }
+
+            if current_floor == -1 {
+                basement_idx = current_idx;
+                break;
+            }
+        }
+
+        basement_idx + 1
+    }
 }
 
 #[derive(PartialEq)]
@@ -41,7 +60,7 @@ enum Instruction {
 }
 
 #[cfg(test)]
-mod tests {
+mod final_floor_tests {
     use super::*;
 
     fn check(input: &str, expected_final_floor: i32) {
@@ -87,5 +106,34 @@ mod tests {
     #[test]
     fn down_up_down_down_up_down_down() {
         check(")())())", -3);
+    }
+}
+
+#[cfg(test)]
+mod first_basement_pos_tests {
+    use super::*;
+
+    fn check(input: &str, expected_pos_to_enter_basement: usize) {
+        let directions = Directions::new(input).unwrap();
+
+        assert_eq!(
+            directions.first_basement_pos(),
+            expected_pos_to_enter_basement,
+        );
+    }
+
+    #[test]
+    fn down() {
+        check(")", 1);
+    }
+
+    #[test]
+    fn up_down_up_down_down() {
+        check("()())", 5);
+    }
+
+    #[test]
+    fn down_up_down() {
+        check(")()", 1);
     }
 }
