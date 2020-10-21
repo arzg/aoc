@@ -18,19 +18,9 @@ impl Directions {
     }
 
     pub fn final_floor(&self) -> i32 {
-        let num_floors_up = self
-            .instructions
+        self.instructions
             .iter()
-            .filter(|instruction| instruction == &&Instruction::Up)
-            .count();
-
-        let num_floors_down = self
-            .instructions
-            .iter()
-            .filter(|instruction| instruction == &&Instruction::Down)
-            .count();
-
-        i32::from(num_floors_up as u16) - i32::from(num_floors_down as u16)
+            .fold(0, |floor, instruction| instruction.offset_floor(floor))
     }
 
     pub fn first_basement_pos(&self) -> Option<usize> {
