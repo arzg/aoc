@@ -20,6 +20,25 @@ impl Present {
     fn side_areas(&self) -> [u32; 3] {
         [self.l * self.w, self.w * self.h, self.h * self.l]
     }
+
+    pub fn ribbon_length(&self) -> u32 {
+        let smallest_side_perimeter = *self.side_perimeters().iter().min().unwrap();
+        let ribbon_length = self.volume();
+
+        smallest_side_perimeter + ribbon_length
+    }
+
+    fn side_perimeters(&self) -> [u32; 3] {
+        [
+            2 * (self.l + self.w),
+            2 * (self.w + self.h),
+            2 * (self.h + self.l),
+        ]
+    }
+
+    fn volume(&self) -> u32 {
+        self.l * self.w * self.h
+    }
 }
 
 impl FromStr for Present {
@@ -75,5 +94,22 @@ mod wrapping_paper_tests {
     fn one_by_one_by_ten() {
         let present = Present { l: 1, w: 1, h: 10 };
         assert_eq!(present.wrapping_paper_area(), 43);
+    }
+}
+
+#[cfg(test)]
+mod ribbon_tests {
+    use super::*;
+
+    #[test]
+    fn two_by_three_by_four() {
+        let present = Present { l: 2, w: 3, h: 4 };
+        assert_eq!(present.ribbon_length(), 34);
+    }
+
+    #[test]
+    fn one_by_one_by_ten() {
+        let present = Present { l: 1, w: 1, h: 10 };
+        assert_eq!(present.ribbon_length(), 14);
     }
 }
