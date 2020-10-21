@@ -34,22 +34,22 @@ impl Directions {
     }
 
     pub fn first_basement_pos(&self) -> usize {
-        let mut current_floor = 0;
-        let mut basement_idx = 0;
+        self.instructions
+            .iter()
+            .enumerate()
+            .try_fold(0, |current_floor, (idx, instruction)| {
+                let new_floor = match instruction {
+                    Instruction::Up => current_floor + 1,
+                    Instruction::Down => current_floor - 1,
+                };
 
-        for (current_idx, instruction) in self.instructions.iter().enumerate() {
-            match instruction {
-                Instruction::Up => current_floor += 1,
-                Instruction::Down => current_floor -= 1,
-            }
-
-            if current_floor == -1 {
-                basement_idx = current_idx;
-                break;
-            }
-        }
-
-        basement_idx + 1
+                if new_floor == -1 {
+                    Err(idx + 1) // Instruction indices are one-based.
+                } else {
+                    Ok(new_floor)
+                }
+            })
+            .unwrap_err()
     }
 }
 
