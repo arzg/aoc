@@ -33,7 +33,7 @@ impl Directions {
         i32::from(num_floors_up as u16) - i32::from(num_floors_down as u16)
     }
 
-    pub fn first_basement_pos(&self) -> usize {
+    pub fn first_basement_pos(&self) -> Option<usize> {
         self.instructions
             .iter()
             .enumerate()
@@ -49,7 +49,7 @@ impl Directions {
                     Ok(new_floor)
                 }
             })
-            .unwrap_err()
+            .err()
     }
 }
 
@@ -113,7 +113,7 @@ mod final_floor_tests {
 mod first_basement_pos_tests {
     use super::*;
 
-    fn check(input: &str, expected_pos_to_enter_basement: usize) {
+    fn check(input: &str, expected_pos_to_enter_basement: Option<usize>) {
         let directions = Directions::new(input).unwrap();
 
         assert_eq!(
@@ -124,16 +124,21 @@ mod first_basement_pos_tests {
 
     #[test]
     fn down() {
-        check(")", 1);
+        check(")", Some(1));
     }
 
     #[test]
     fn up_down_up_down_down() {
-        check("()())", 5);
+        check("()())", Some(5));
     }
 
     #[test]
     fn down_up_down() {
-        check(")()", 1);
+        check(")()", Some(1));
+    }
+
+    #[test]
+    fn up_up_up() {
+        check("(((", None);
     }
 }
