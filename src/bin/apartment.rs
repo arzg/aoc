@@ -3,9 +3,9 @@ use aoc::apartment::Directions;
 const INPUT: &str = include_str!("apartment_input");
 
 fn main() {
-    let directions = Directions::new(INPUT).unwrap();
+    let directions = Directions::new(INPUT);
 
-    println!("{}", directions.final_floor());
+    println!("{}", directions.clone().final_floor());
 
     println!(
         "{}",

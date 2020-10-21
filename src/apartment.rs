@@ -1,32 +1,21 @@
-pub struct Directions {
-    instructions: Vec<Instruction>,
+use std::str::Chars;
+
+#[derive(Clone)]
+pub struct Directions<'s> {
+    chars: Chars<'s>,
 }
 
-impl Directions {
-    pub fn new(s: &str) -> Option<Self> {
-        let mut instructions = Vec::new();
-
-        for c in s.trim().chars() {
-            match c {
-                '(' => instructions.push(Instruction::Up),
-                ')' => instructions.push(Instruction::Down),
-                _ => return None,
-            }
-        }
-
-        Some(Self { instructions })
+impl<'s> Directions<'s> {
+    pub fn new(s: &'s str) -> Self {
+        Self { chars: s.chars() }
     }
 
-    pub fn final_floor(&self) -> i32 {
-        self.instructions
-            .iter()
-            .fold(0, |floor, instruction| instruction.offset_floor(floor))
+    pub fn final_floor(self) -> i32 {
+        self.fold(0, |floor, instruction| instruction.offset_floor(floor))
     }
 
-    pub fn first_basement_pos(&self) -> Option<usize> {
-        self.instructions
-            .iter()
-            .enumerate()
+    pub fn first_basement_pos(self) -> Option<usize> {
+        self.enumerate()
             .try_fold(0, |current_floor, (idx, instruction)| {
                 let new_floor = instruction.offset_floor(current_floor);
 
@@ -40,8 +29,20 @@ impl Directions {
     }
 }
 
+impl Iterator for Directions<'_> {
+    type Item = Instruction;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.chars.next()? {
+            '(' => Some(Instruction::Up),
+            ')' => Some(Instruction::Down),
+            _ => None,
+        }
+    }
+}
+
 #[derive(PartialEq)]
-enum Instruction {
+pub enum Instruction {
     Up,
     Down,
 }
@@ -60,7 +61,7 @@ mod final_floor_tests {
     use super::*;
 
     fn check(input: &str, expected_final_floor: i32) {
-        let directions = Directions::new(input).unwrap();
+        let directions = Directions::new(input);
         assert_eq!(directions.final_floor(), expected_final_floor);
     }
 
@@ -110,7 +111,7 @@ mod first_basement_pos_tests {
     use super::*;
 
     fn check(input: &str, expected_pos_to_enter_basement: Option<usize>) {
-        let directions = Directions::new(input).unwrap();
+        let directions = Directions::new(input);
 
         assert_eq!(
             directions.first_basement_pos(),
