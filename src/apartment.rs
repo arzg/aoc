@@ -38,10 +38,7 @@ impl Directions {
             .iter()
             .enumerate()
             .try_fold(0, |current_floor, (idx, instruction)| {
-                let new_floor = match instruction {
-                    Instruction::Up => current_floor + 1,
-                    Instruction::Down => current_floor - 1,
-                };
+                let new_floor = instruction.offset_floor(current_floor);
 
                 if new_floor == -1 {
                     Err(idx + 1) // Instruction indices are one-based.
@@ -57,6 +54,15 @@ impl Directions {
 enum Instruction {
     Up,
     Down,
+}
+
+impl Instruction {
+    fn offset_floor(&self, floor: i32) -> i32 {
+        match self {
+            Self::Up => floor + 1,
+            Self::Down => floor - 1,
+        }
+    }
 }
 
 #[cfg(test)]
