@@ -36,12 +36,14 @@ mod tests {
     use super::*;
 
     #[test]
+    #[ignore]
     fn abcdef() {
         let mut miner = Miner::new("abcdef");
         assert_eq!(miner.mine(5), 609043);
     }
 
     #[test]
+    #[ignore]
     fn pqrstuv() {
         let mut miner = Miner::new("pqrstuv");
         assert_eq!(miner.mine(5), 1048970);
