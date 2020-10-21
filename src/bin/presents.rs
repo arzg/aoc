@@ -5,8 +5,9 @@ const INPUT: &str = include_str!("presents_input");
 
 fn main() {
     let presents = INPUT
+        .trim()
         .lines()
-        .map(|line| Present::from_str(line.trim()).unwrap());
+        .map(|line| Present::from_str(line).unwrap());
 
     let total_wrapping_paper: u32 = presents
         .clone()
