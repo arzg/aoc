@@ -6,19 +6,19 @@ const ROWS: usize = 1000;
 const COLUMNS: usize = 1000;
 const LIGHTS: usize = ROWS * COLUMNS;
 
-pub struct Grid {
-    lights: [Light; LIGHTS],
+pub struct Grid<L: Light> {
+    lights: [L; LIGHTS],
 }
 
-impl Default for Grid {
+impl<L: Light> Default for Grid<L> {
     fn default() -> Self {
         Self {
-            lights: [Light::Off; LIGHTS],
+            lights: [L::default(); LIGHTS],
         }
     }
 }
 
-impl Grid {
+impl<L: Light> Grid<L> {
     pub fn apply(&mut self, instruction: Instruction) {
         let rows = self.lights.chunks_mut(COLUMNS);
 
@@ -34,11 +34,8 @@ impl Grid {
         }
     }
 
-    pub fn lit_lights(&self) -> usize {
-        self.lights
-            .iter()
-            .filter(|&&light| light == Light::On)
-            .count()
+    pub fn total_brightness(&self) -> u32 {
+        self.lights.iter().map(Light::brightness).sum()
     }
 }
 
@@ -70,7 +67,7 @@ impl FromStr for Instruction {
 }
 
 #[derive(Copy, Clone)]
-enum Action {
+pub enum Action {
     TurnOn,
     TurnOff,
     Toggle,
@@ -99,15 +96,20 @@ impl Action {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-enum Light {
+pub trait Light: Copy + Default {
+    fn apply(&mut self, action: Action);
+    fn brightness(&self) -> u32;
+}
+
+#[derive(Copy, Clone, PartialEq)]
+pub enum BinaryLight {
     On,
     Off,
 }
 
-impl Light {
-    fn apply(&mut self, instruction: Action) {
-        match instruction {
+impl Light for BinaryLight {
+    fn apply(&mut self, action: Action) {
+        match action {
             Action::TurnOn => *self = Self::On,
             Action::TurnOff => *self = Self::Off,
             Action::Toggle => match self {
@@ -115,6 +117,19 @@ impl Light {
                 Self::Off => *self = Self::On,
             },
         }
+    }
+
+    fn brightness(&self) -> u32 {
+        match self {
+            Self::On => 1,
+            Self::Off => 0,
+        }
+    }
+}
+
+impl Default for BinaryLight {
+    fn default() -> Self {
+        Self::Off
     }
 }
 
@@ -143,7 +158,7 @@ mod tests {
 
     #[test]
     fn turn_on_all_lights() {
-        let mut grid = Grid::default();
+        let mut grid: Grid<BinaryLight> = Grid::default();
 
         grid.apply(Instruction {
             action: Action::TurnOn,
@@ -154,12 +169,12 @@ mod tests {
             },
         });
 
-        assert!(grid.lights.iter().all(|light| *light == Light::On));
+        assert!(grid.lights.iter().all(|light| *light == BinaryLight::On));
     }
 
     #[test]
     fn toggle_first_row() {
-        let mut grid = Grid::default();
+        let mut grid: Grid<BinaryLight> = Grid::default();
 
         grid.apply(Instruction {
             action: Action::Toggle,
@@ -172,7 +187,7 @@ mod tests {
 
         let (first_row, all_others) = grid.lights.split_at(COLUMNS);
 
-        assert!(first_row.iter().all(|light| *light == Light::On));
-        assert!(all_others.iter().all(|light| *light == Light::Off));
+        assert!(first_row.iter().all(|light| *light == BinaryLight::On));
+        assert!(all_others.iter().all(|light| *light == BinaryLight::Off));
     }
 }
