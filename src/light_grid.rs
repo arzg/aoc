@@ -7,13 +7,13 @@ const COLUMNS: usize = 1000;
 const LIGHTS: usize = ROWS * COLUMNS;
 
 pub struct Grid<L: Light> {
-    lights: [L; LIGHTS],
+    lights: Vec<L>,
 }
 
 impl<L: Light> Default for Grid<L> {
     fn default() -> Self {
         Self {
-            lights: [L::default(); LIGHTS],
+            lights: vec![L::default(); LIGHTS],
         }
     }
 }
@@ -96,12 +96,12 @@ impl Action {
     }
 }
 
-pub trait Light: Copy + Default {
+pub trait Light: Clone + Default {
     fn apply(&mut self, action: Action);
     fn brightness(&self) -> u32;
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum BinaryLight {
     On,
     Off,
