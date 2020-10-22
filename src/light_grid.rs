@@ -133,6 +133,31 @@ impl Default for BinaryLight {
     }
 }
 
+#[derive(Clone)]
+pub struct ScalarLight {
+    brightness: u32,
+}
+
+impl Light for ScalarLight {
+    fn apply(&mut self, action: Action) {
+        match action {
+            Action::TurnOn => self.brightness += 1,
+            Action::TurnOff => self.brightness = self.brightness.saturating_sub(1),
+            Action::Toggle => self.brightness += 2,
+        }
+    }
+
+    fn brightness(&self) -> u32 {
+        self.brightness
+    }
+}
+
+impl Default for ScalarLight {
+    fn default() -> Self {
+        Self { brightness: 0 }
+    }
+}
+
 #[derive(Debug, Copy, Clone)]
 struct Coordinate {
     x: usize,
@@ -153,7 +178,7 @@ impl Coordinate {
 }
 
 #[cfg(test)]
-mod tests {
+mod binary_tests {
     use super::*;
 
     #[test]
@@ -189,5 +214,56 @@ mod tests {
 
         assert!(first_row.iter().all(|light| *light == BinaryLight::On));
         assert!(all_others.iter().all(|light| *light == BinaryLight::Off));
+    }
+}
+
+#[cfg(test)]
+mod scalar_tests {
+    use super::*;
+    use std::convert::TryFrom;
+
+    #[test]
+    fn turn_on_first() {
+        let mut grid: Grid<ScalarLight> = Grid::default();
+
+        grid.apply(Instruction {
+            action: Action::TurnOn,
+            from: Coordinate { x: 0, y: 0 },
+            to: Coordinate { x: 0, y: 0 },
+        });
+
+        assert_eq!(grid.total_brightness(), 1);
+    }
+
+    #[test]
+    fn do_not_overflow_if_turning_off_all_lights() {
+        let mut grid: Grid<ScalarLight> = Grid::default();
+
+        grid.apply(Instruction {
+            action: Action::TurnOff,
+            from: Coordinate { x: 0, y: 0 },
+            to: Coordinate {
+                x: COLUMNS - 1,
+                y: ROWS - 1,
+            },
+        });
+
+        assert_eq!(grid.total_brightness(), 0);
+    }
+
+    #[test]
+    fn toggle_all_lights() {
+        let mut grid: Grid<ScalarLight> = Grid::default();
+
+        grid.apply(Instruction {
+            action: Action::Toggle,
+            from: Coordinate { x: 0, y: 0 },
+            to: Coordinate {
+                x: COLUMNS - 1,
+                y: ROWS - 1,
+            },
+        });
+
+        assert_eq!(grid.total_brightness(), u32::try_from(LIGHTS).unwrap() * 2);
     }
 }
