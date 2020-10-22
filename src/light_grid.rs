@@ -20,10 +20,15 @@ impl Default for Grid {
 
 impl Grid {
     pub fn apply(&mut self, instruction: Instruction) {
-        for (idx, light) in self.lights.iter_mut().enumerate() {
-            let current_coordinate = Coordinate(idx % COLUMNS, idx / COLUMNS);
+        let rows = self.lights.chunks_mut(COLUMNS);
 
-            if current_coordinate.contained_in(instruction.from, instruction.to) {
+        // We need to add one because the instructions are inclusive.
+        let affected_rows = rows.take(instruction.to.y + 1).skip(instruction.from.y);
+
+        for row in affected_rows {
+            let affected_lights = &mut row[instruction.from.x..=instruction.to.x];
+
+            for light in affected_lights {
                 light.apply(instruction.action);
             }
         }
@@ -114,7 +119,10 @@ impl Light {
 }
 
 #[derive(Debug, Copy, Clone)]
-struct Coordinate(usize, usize);
+struct Coordinate {
+    x: usize,
+    y: usize,
+}
 
 impl Coordinate {
     fn new(s: &str) -> Result<(&str, Self), String> {
@@ -125,11 +133,7 @@ impl Coordinate {
         let x = x.parse().unwrap();
         let y = y.parse().unwrap();
 
-        Ok((s, Self(x, y)))
-    }
-
-    fn contained_in(&self, from: Self, to: Self) -> bool {
-        from.0 <= self.0 && to.0 >= self.0 && from.1 <= self.1 && to.1 >= self.1
+        Ok((s, Self { x, y }))
     }
 }
 
@@ -143,8 +147,11 @@ mod tests {
 
         grid.apply(Instruction {
             action: Action::TurnOn,
-            from: Coordinate(0, 0),
-            to: Coordinate(COLUMNS - 1, ROWS - 1),
+            from: Coordinate { x: 0, y: 0 },
+            to: Coordinate {
+                x: COLUMNS - 1,
+                y: ROWS - 1,
+            },
         });
 
         assert!(grid.lights.iter().all(|light| *light == Light::On));
@@ -156,8 +163,11 @@ mod tests {
 
         grid.apply(Instruction {
             action: Action::Toggle,
-            from: Coordinate(0, 0),
-            to: Coordinate(COLUMNS - 1, 0),
+            from: Coordinate { x: 0, y: 0 },
+            to: Coordinate {
+                x: COLUMNS - 1,
+                y: 0,
+            },
         });
 
         let (first_row, all_others) = grid.lights.split_at(COLUMNS);
