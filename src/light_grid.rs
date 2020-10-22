@@ -39,6 +39,7 @@ impl<L: Light> Grid<L> {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Instruction {
     action: Action,
     from: Coordinate,
@@ -66,7 +67,7 @@ impl FromStr for Instruction {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Action {
     TurnOn,
     TurnOff,
@@ -158,7 +159,7 @@ impl Default for ScalarLight {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 struct Coordinate {
     x: usize,
     y: usize,
@@ -265,5 +266,35 @@ mod scalar_tests {
         });
 
         assert_eq!(grid.total_brightness(), u32::try_from(LIGHTS).unwrap() * 2);
+    }
+}
+
+#[cfg(test)]
+mod parsing_tests {
+    use super::*;
+
+    #[test]
+    fn parse_instruction() {
+        assert_eq!(
+            "turn on 0,0 through 999,999".parse(),
+            Ok(Instruction {
+                action: Action::TurnOn,
+                from: Coordinate { x: 0, y: 0 },
+                to: Coordinate { x: 999, y: 999 },
+            }),
+        );
+    }
+
+    #[test]
+    fn parse_action() {
+        assert_eq!(Action::new("toggle"), Ok(("", Action::Toggle)));
+    }
+
+    #[test]
+    fn parse_coordinate() {
+        assert_eq!(
+            Coordinate::new("123,456"),
+            Ok(("", Coordinate { x: 123, y: 456 })),
+        );
     }
 }
