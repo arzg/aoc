@@ -10,6 +10,14 @@ pub(crate) fn extract_digits(s: &str) -> Result<(&str, &str), String> {
     take_while1(|c| c.is_ascii_digit(), s, "expected digits".to_string())
 }
 
+pub(crate) fn extract_lowercase(s: &str) -> Result<(&str, &str), String> {
+    take_while1(
+        |c| c.is_ascii_lowercase(),
+        s,
+        "expected lowercase letters".to_string(),
+    )
+}
+
 fn take_while1(
     accept: impl Fn(char) -> bool,
     s: &str,
