@@ -9,7 +9,7 @@ pub struct Circuit {
 
 impl Circuit {
     pub fn emulate(&self) -> HashMap<&str, u16> {
-        let wire_signals = self
+        let instructions = self
             .instructions
             .iter()
             .map(|Instruction { wire, signal }| (wire.as_str(), signal.clone()))
@@ -20,9 +20,40 @@ impl Circuit {
         self.instructions
             .iter()
             .map(|Instruction { wire, signal }| {
-                (wire.as_str(), signal.emulate(&wire_signals, &mut cache))
+                (wire.as_str(), signal.emulate(&instructions, &mut cache))
             })
             .collect()
+    }
+
+    pub fn override_and_clear(
+        &self,
+        wire_signals: HashMap<&str, u16>,
+        from: &str,
+        to: &str,
+    ) -> u16 {
+        let instructions = self
+            .instructions
+            .iter()
+            .map(|Instruction { wire, signal }| (wire.as_str(), signal.clone()))
+            .collect();
+
+        let mut cache = {
+            let from_value = *wire_signals.get(from).unwrap();
+            let mut cache = HashMap::with_capacity(wire_signals.len());
+            cache.insert(to, from_value);
+            cache
+        };
+
+        self.instructions
+            .iter()
+            .find_map(|Instruction { wire, signal }| {
+                if wire == from {
+                    Some(signal.emulate(&instructions, &mut cache))
+                } else {
+                    None
+                }
+            })
+            .unwrap()
     }
 }
 

@@ -15,4 +15,11 @@ fn main() {
         "The signal being provided to wire a is {}",
         wire_signals.get("a").unwrap(),
     );
+
+    let overriden_a_signal = circuit.override_and_clear(wire_signals, "a", "b");
+
+    println!(
+        "The signal being provided to wire a after overriding is {}",
+        overriden_a_signal,
+    );
 }
