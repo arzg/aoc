@@ -12,7 +12,18 @@ fn main() {
         for y in &expenses {
             if x + y == 2020 {
                 println!("{}", x * y);
-                return;
+                break;
+            }
+        }
+    }
+
+    for x in &expenses {
+        for y in &expenses {
+            for z in &expenses {
+                if x + y + z == 2020 {
+                    println!("{}", x * y * z);
+                    break;
+                }
             }
         }
     }
