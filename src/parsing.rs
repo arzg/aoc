@@ -18,6 +18,15 @@ pub(crate) fn extract_lowercase(s: &str) -> Result<(&str, &str), String> {
     )
 }
 
+pub(crate) fn extract_char(s: &str) -> Result<(&str, char), String> {
+    let gen_error_msg = || "expected a character".to_string();
+
+    let c = s.chars().next().ok_or_else(gen_error_msg)?;
+    let (idx, _) = s.char_indices().nth(1).ok_or_else(gen_error_msg)?;
+
+    Ok((&s[idx..], c))
+}
+
 fn take_while1(
     accept: impl Fn(char) -> bool,
     s: &str,
