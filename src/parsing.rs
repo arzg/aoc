@@ -1,9 +1,6 @@
 pub(crate) fn tag<'a, 'b>(starting_text: &'a str, s: &'b str) -> Result<&'b str, String> {
-    if s.starts_with(starting_text) {
-        Ok(&s[starting_text.len()..])
-    } else {
-        Err(format!("expected {}", starting_text))
-    }
+    s.strip_prefix(starting_text)
+        .ok_or_else(|| format!("expected {}", starting_text))
 }
 
 pub(crate) fn extract_digits(s: &str) -> Result<(&str, &str), String> {
