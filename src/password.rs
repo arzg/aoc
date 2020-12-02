@@ -2,6 +2,7 @@ use crate::parsing::{extract_char, extract_digits, tag};
 use std::ops::RangeInclusive;
 use std::str::FromStr;
 
+#[derive(Debug, PartialEq)]
 pub struct Password {
     requirements: Requirements,
     password: String,
@@ -27,7 +28,7 @@ impl Password {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct Requirements {
     num_appearances: RangeInclusive<usize>,
     letter: char,
@@ -80,4 +81,70 @@ impl Requirements {
 pub enum Ruleset {
     New,
     Old,
+}
+
+#[cfg(test)]
+mod parsing_tests {
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        assert_eq!(
+            Password::from_str("1-3 a: abcde"),
+            Ok(Password {
+                requirements: Requirements {
+                    num_appearances: 1..=3,
+                    letter: 'a',
+                },
+                password: "abcde".to_string(),
+            }),
+        );
+    }
+}
+
+#[cfg(test)]
+mod validation_tests {
+    use super::*;
+
+    #[test]
+    fn abcde() {
+        let password = Password {
+            requirements: Requirements {
+                num_appearances: 1..=3,
+                letter: 'a',
+            },
+            password: "abcde".to_string(),
+        };
+
+        assert_eq!(password.is_valid(Ruleset::Old), true);
+        assert_eq!(password.is_valid(Ruleset::New), true);
+    }
+
+    #[test]
+    fn cdefg() {
+        let password = Password {
+            requirements: Requirements {
+                num_appearances: 1..=3,
+                letter: 'b',
+            },
+            password: "cdefg".to_string(),
+        };
+
+        assert_eq!(password.is_valid(Ruleset::Old), false);
+        assert_eq!(password.is_valid(Ruleset::New), false);
+    }
+
+    #[test]
+    fn ccccccccc_old_ruleset() {
+        let password = Password {
+            requirements: Requirements {
+                num_appearances: 2..=9,
+                letter: 'c',
+            },
+            password: "ccccccccc".to_string(),
+        };
+
+        assert_eq!(password.is_valid(Ruleset::Old), true);
+        assert_eq!(password.is_valid(Ruleset::New), false);
+    }
 }
