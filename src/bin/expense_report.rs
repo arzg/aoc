@@ -1,3 +1,4 @@
+use aoc::expense_report;
 use std::str::FromStr;
 
 const INPUT: &str = include_str!("expense_report_input");
@@ -8,39 +9,15 @@ fn main() {
         .map(|line| u32::from_str(line).unwrap())
         .collect();
 
+    let format_solution = |s: Option<u32>| s.map_or("No solution".to_string(), |n| n.to_string());
+
     println!(
         "{}",
-        two_add_to_2020(&expenses).map_or("No solution".to_string(), |n| n.to_string()),
+        format_solution(expense_report::two_add_to_2020(&expenses)),
     );
 
     println!(
         "{}",
-        three_add_to_2020(&expenses).map_or("No solution".to_string(), |n| n.to_string()),
+        format_solution(expense_report::three_add_to_2020(&expenses)),
     );
-}
-
-fn two_add_to_2020(expenses: &[u32]) -> Option<u32> {
-    for x in expenses {
-        for y in expenses {
-            if x + y == 2020 {
-                return Some(x * y);
-            }
-        }
-    }
-
-    None
-}
-
-fn three_add_to_2020(expenses: &[u32]) -> Option<u32> {
-    for x in expenses {
-        for y in expenses {
-            for z in expenses {
-                if x + y + z == 2020 {
-                    return Some(x * y * z);
-                }
-            }
-        }
-    }
-
-    None
 }
