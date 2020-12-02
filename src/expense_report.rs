@@ -23,3 +23,24 @@ pub fn three_add_to_2020(expenses: &[u32]) -> Option<u32> {
 
     None
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works_with_two() {
+        assert_eq!(
+            two_add_to_2020(&[1721, 979, 366, 299, 675, 1456]),
+            Some(514579),
+        );
+    }
+
+    #[test]
+    fn it_works_with_three() {
+        assert_eq!(
+            three_add_to_2020(&[1721, 979, 366, 299, 675, 1456]),
+            Some(241861950),
+        );
+    }
+}
