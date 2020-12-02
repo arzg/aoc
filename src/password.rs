@@ -22,8 +22,8 @@ impl FromStr for Password {
 }
 
 impl Password {
-    pub fn is_valid(&self) -> bool {
-        self.requirements.met_by_password(&self.password)
+    pub fn is_valid(&self, ruleset: Ruleset) -> bool {
+        self.requirements.met_by_password(&self.password, ruleset)
     }
 }
 
@@ -50,9 +50,34 @@ impl Requirements {
         ))
     }
 
-    fn met_by_password(&self, password: &str) -> bool {
-        let num_occurrences_of_letter = password.chars().filter(|c| *c == self.letter).count();
+    fn met_by_password(&self, password: &str, ruleset: Ruleset) -> bool {
+        match ruleset {
+            Ruleset::Old => {
+                let num_occurrences_of_letter =
+                    password.chars().filter(|c| *c == self.letter).count();
 
-        self.num_appearances.contains(&num_occurrences_of_letter)
+                self.num_appearances.contains(&num_occurrences_of_letter)
+            }
+            Ruleset::New => {
+                let is_first_position_correct = password
+                    .chars()
+                    .nth(self.num_appearances.start() - 1)
+                    .unwrap()
+                    == self.letter;
+
+                let is_second_position_correct = password
+                    .chars()
+                    .nth(self.num_appearances.end() - 1)
+                    .unwrap()
+                    == self.letter;
+
+                is_first_position_correct != is_second_position_correct
+            }
+        }
     }
+}
+
+pub enum Ruleset {
+    New,
+    Old,
 }
