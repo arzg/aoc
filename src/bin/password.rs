@@ -1,10 +1,10 @@
 use aoc::password::{Password, Ruleset};
-use std::str::FromStr;
+use std::convert::TryFrom;
 
 const INPUT: &str = include_str!("password_input");
 
 fn main() {
-    let passwords = INPUT.lines().map(|line| Password::from_str(line).unwrap());
+    let passwords = INPUT.lines().map(|line| Password::try_from(line).unwrap());
 
     let num_valid_with_old_ruleset = passwords
         .clone()
