@@ -8,17 +8,17 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn num_trees_in_path(&self, offset: Offset) -> usize {
-        self.gen_path(offset)
+    pub fn num_trees_in_path(&self, slope: Slope) -> usize {
+        self.gen_path(slope)
             .filter(|datum| *datum == Datum::Tree)
             .count()
     }
 
-    fn gen_path(&self, offset: Offset) -> impl Iterator<Item = Datum> + '_ {
+    fn gen_path(&self, slope: Slope) -> impl Iterator<Item = Datum> + '_ {
         PathIter {
             map: self,
             current_pos: Coordinate { x: 0, y: 0 },
-            offset,
+            slope,
         }
     }
 
@@ -71,7 +71,7 @@ impl FromStr for Map {
 struct PathIter<'m> {
     map: &'m Map,
     current_pos: Coordinate,
-    offset: Offset,
+    slope: Slope,
 }
 
 impl Iterator for PathIter<'_> {
@@ -79,7 +79,7 @@ impl Iterator for PathIter<'_> {
 
     fn next(&mut self) -> Option<Self::Item> {
         let datum = self.map.get(self.current_pos)?;
-        self.current_pos.offset_by(self.offset);
+        self.current_pos.offset_by(self.slope);
 
         Some(datum)
     }
@@ -106,14 +106,14 @@ struct Coordinate {
 }
 
 impl Coordinate {
-    fn offset_by(&mut self, offset: Offset) {
-        self.x += offset.right;
-        self.y += offset.down;
+    fn offset_by(&mut self, slope: Slope) {
+        self.x += slope.right;
+        self.y += slope.down;
     }
 }
 
 #[derive(Copy, Clone)]
-pub struct Offset {
+pub struct Slope {
     pub right: usize,
     pub down: usize,
 }
