@@ -3,7 +3,33 @@ use std::ops::Range;
 const NUM_ROWS: u32 = 127;
 const NUM_COLUMNS: u32 = 7;
 
-#[derive(Debug, PartialEq)]
+pub fn find_seat(seat_locations: &[SeatLocation]) -> SeatLocation {
+    let mut all_possible_locations: Vec<_> = (1..NUM_ROWS)
+        .flat_map(|row| (1..NUM_COLUMNS).map(move |column| SeatLocation { row, column }))
+        .collect();
+
+    all_possible_locations.retain(|location| {
+        let have_current_location = seat_locations.contains(location);
+
+        let have_location_with_id_plus_one = seat_locations
+            .iter()
+            .map(SeatLocation::id)
+            .any(|id| id + 1 == location.id());
+
+        let have_location_with_id_minus_one = seat_locations
+            .iter()
+            .map(SeatLocation::id)
+            .any(|id| id - 1 == location.id());
+
+        !have_current_location && have_location_with_id_plus_one && have_location_with_id_minus_one
+    });
+
+    assert_eq!(all_possible_locations.len(), 1);
+
+    all_possible_locations[0]
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct SeatLocation {
     row: u32,
     column: u32,
