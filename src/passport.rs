@@ -24,34 +24,35 @@ impl Passport<'_> {
     }
 
     pub fn is_valid(&self) -> bool {
-        self.birth_year
-            .map_or(false, |byr| (1920..=2002).contains(&byr.parse().unwrap()))
-            && self
-                .issue_year
-                .map_or(false, |iyr| (2010..=2020).contains(&iyr.parse().unwrap()))
-            && self
-                .expiration_year
-                .map_or(false, |eyr| (2020..=2030).contains(&eyr.parse().unwrap()))
-            && self.height.map_or(false, |hgt| {
-                hgt.strip_suffix("cm").map_or_else(
-                    || {
-                        hgt.strip_suffix("in")
-                            .map_or(false, |in_| (59..=76).contains(&in_.parse().unwrap()))
-                    },
-                    |cm| (150..=193).contains(&cm.parse().unwrap()),
-                )
+        if !self.is_complete() {
+            return false;
+        }
+
+        let birth_year = self.birth_year.unwrap();
+        let issue_year = self.issue_year.unwrap();
+        let expiration_year = self.expiration_year.unwrap();
+        let height = self.height.unwrap();
+        let hair_color = self.hair_color.unwrap();
+        let eye_color = self.eye_color.unwrap();
+        let passport_id = self.passport_id.unwrap();
+
+        (1920..=2002).contains(&birth_year.parse().unwrap())
+            && (2010..=2020).contains(&issue_year.parse().unwrap())
+            && (2020..=2030).contains(&expiration_year.parse().unwrap())
+            && height.strip_suffix("cm").map_or_else(
+                || {
+                    height
+                        .strip_suffix("in")
+                        .map_or(false, |in_| (59..=76).contains(&in_.parse().unwrap()))
+                },
+                |cm| (150..=193).contains(&cm.parse().unwrap()),
+            )
+            && hair_color.strip_prefix('#').map_or(false, |hex| {
+                hex.len() == 6 && hex.chars().all(|c| c.is_ascii_hexdigit())
             })
-            && self.hair_color.map_or(false, |hcl| {
-                hcl.strip_prefix('#').map_or(false, |hex| {
-                    hex.len() == 6 && hex.chars().all(|c| c.is_ascii_hexdigit())
-                })
-            })
-            && self.eye_color.map_or(false, |ecl| -> bool {
-                ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].contains(&ecl)
-            })
-            && self.passport_id.map_or(false, |pid| {
-                pid.len() == 9 && pid.chars().all(|c| c.is_ascii_digit())
-            })
+            && ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].contains(&eye_color)
+            && passport_id.len() == 9
+            && passport_id.chars().all(|c| c.is_ascii_digit())
     }
 }
 
