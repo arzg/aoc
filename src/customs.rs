@@ -13,7 +13,7 @@ impl Group {
             .filter(|question| {
                 self.person_questions
                     .iter()
-                    .all(|person_questions| person_questions.questions.contains(question))
+                    .all(|pq| pq.questions.contains(question))
             })
             .count()
     }
