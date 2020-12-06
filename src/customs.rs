@@ -55,3 +55,63 @@ impl From<&str> for PersonQuestions {
 
 #[derive(PartialEq)]
 struct Question(char);
+
+#[cfg(test)]
+mod num_questions_tests {
+    use super::*;
+
+    #[test]
+    fn abc() {
+        assert_eq!(Group::from("abc").num_questions(), 3);
+    }
+
+    #[test]
+    fn a_b_c() {
+        assert_eq!(Group::from("a\nb\nc").num_questions(), 3);
+    }
+
+    #[test]
+    fn ab_ac() {
+        assert_eq!(Group::from("ab\nac").num_questions(), 3);
+    }
+
+    #[test]
+    fn a_a_a_a() {
+        assert_eq!(Group::from("a\na\na\na").num_questions(), 1);
+    }
+
+    #[test]
+    fn b() {
+        assert_eq!(Group::from("b").num_questions(), 1);
+    }
+}
+
+#[cfg(test)]
+mod num_questions_all_have_tests {
+    use super::*;
+
+    #[test]
+    fn abc() {
+        assert_eq!(Group::from("abc").num_questions_all_have(), 3);
+    }
+
+    #[test]
+    fn a_b_c() {
+        assert_eq!(Group::from("a\nb\nc").num_questions_all_have(), 0);
+    }
+
+    #[test]
+    fn ab_ac() {
+        assert_eq!(Group::from("ab\nac").num_questions_all_have(), 1);
+    }
+
+    #[test]
+    fn a_a_a_a() {
+        assert_eq!(Group::from("a\na\na\na").num_questions_all_have(), 1);
+    }
+
+    #[test]
+    fn b() {
+        assert_eq!(Group::from("b").num_questions_all_have(), 1);
+    }
+}
