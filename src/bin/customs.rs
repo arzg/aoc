@@ -5,7 +5,7 @@ fn main() {
         .split("\n\n")
         .map(|group| {
             let mut answers_in_group: Vec<_> = group.lines().flat_map(str::chars).collect();
-            answers_in_group.sort();
+            answers_in_group.sort_unstable();
             answers_in_group.dedup();
 
             answers_in_group.len()
@@ -21,7 +21,7 @@ fn main() {
         .split("\n\n")
         .map(|group| {
             let mut answers_in_group: Vec<_> = group.lines().flat_map(str::chars).collect();
-            answers_in_group.sort();
+            answers_in_group.sort_unstable();
             answers_in_group.dedup();
 
             let group_answers: Vec<Vec<_>> =
