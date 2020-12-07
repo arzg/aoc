@@ -1,3 +1,38 @@
+pub(crate) fn sequence<T>(
+    parser: impl Fn(&str) -> Result<(&str, T), String>,
+    separator_parser: impl Fn(&str) -> Result<&str, String>,
+    mut s: &str,
+) -> Result<(&str, Vec<T>), String> {
+    let mut items = Vec::new();
+
+    while let Ok((new_s, item)) = parser(s) {
+        s = new_s;
+        items.push(item);
+
+        s = if let Ok(s) = separator_parser(new_s) {
+            s
+        } else {
+            break;
+        };
+    }
+
+    Ok((s, items))
+}
+
+pub(crate) fn sequence1<T>(
+    parser: impl Fn(&str) -> Result<(&str, T), String>,
+    separator_parser: impl Fn(&str) -> Result<&str, String>,
+    s: &str,
+) -> Result<(&str, Vec<T>), String> {
+    let (s, sequence) = sequence(parser, separator_parser, s)?;
+
+    if sequence.is_empty() {
+        Err("expected a sequence with more than one item".to_string())
+    } else {
+        Ok((s, sequence))
+    }
+}
+
 pub(crate) fn tag<'a, 'b>(starting_text: &'a str, s: &'b str) -> Result<&'b str, String> {
     s.strip_prefix(starting_text)
         .ok_or_else(|| format!("expected {}", starting_text))
