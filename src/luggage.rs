@@ -8,7 +8,7 @@ pub struct Rules {
 }
 
 impl Rules {
-    pub fn num_bags_that_can_contain(&self, bag: Bag) -> usize {
+    pub fn num_bags_that_can_contain(&self, bag: &Bag) -> usize {
         fn can_contain(rules: &Rules, bag: &Bag, spec: &Specification) -> bool {
             let bags_with_quantities = match spec {
                 Specification::MultipleBags(bags_with_quantities) => bags_with_quantities,
@@ -24,8 +24,21 @@ impl Rules {
 
         self.rules
             .values()
-            .filter(|contains| can_contain(self, &bag, contains))
+            .filter(|contains| can_contain(self, bag, contains))
             .count()
+    }
+
+    pub fn num_bags_contained_by(&self, bag: &Bag) -> usize {
+        match self.rules.get(bag).unwrap() {
+            Specification::MultipleBags(bags_with_quantities) => bags_with_quantities
+                .iter()
+                .map(|BagWithQuantity { bag, quantity }| {
+                    quantity + self.num_bags_contained_by(bag) * quantity
+                })
+                .sum(),
+
+            Specification::NoBags => 0,
+        }
     }
 }
 
@@ -143,7 +156,7 @@ mod tests {
             color: "gold".to_string(),
         };
 
-        assert_eq!(rules.num_bags_that_can_contain(bag), 1);
+        assert_eq!(rules.num_bags_that_can_contain(&bag), 1);
     }
 
     #[test]
@@ -159,7 +172,7 @@ dark green bags contain 1 shiny gold bag.",
             color: "gold".to_string(),
         };
 
-        assert_eq!(rules.num_bags_that_can_contain(bag), 2);
+        assert_eq!(rules.num_bags_that_can_contain(&bag), 2);
     }
 
     #[test]
@@ -175,7 +188,7 @@ dark green bags contain 1 shiny gold bag.",
             color: "gold".to_string(),
         };
 
-        assert_eq!(rules.num_bags_that_can_contain(bag), 2);
+        assert_eq!(rules.num_bags_that_can_contain(&bag), 2);
     }
 
     #[test]
@@ -192,6 +205,6 @@ dark green bags contain 1 shiny gold bag.",
             color: "gold".to_string(),
         };
 
-        assert_eq!(rules.num_bags_that_can_contain(bag), 2);
+        assert_eq!(rules.num_bags_that_can_contain(&bag), 2);
     }
 }
