@@ -1,3 +1,4 @@
+use std::mem;
 use std::str::FromStr;
 
 use crate::parsing::{extract_digits, tag};
@@ -15,6 +16,51 @@ impl Vm {
             instructions: instructions.map(|instruction| (instruction, 0)).collect(),
             instruction_pointer: 0,
             accumulator: 0,
+        }
+    }
+
+    pub fn accumulator_after_fixing_program(&mut self) -> i32 {
+        let mut fix_attempt_idx = 0;
+
+        loop {
+            let new_operation = match self.instructions[fix_attempt_idx].0.operation {
+                Operation::Jump => Operation::NoOp,
+                Operation::NoOp => Operation::Jump,
+                _ => unreachable!(),
+            };
+
+            let old_operation = mem::replace(
+                &mut self.instructions[fix_attempt_idx].0.operation,
+                new_operation,
+            );
+
+            loop {
+                if self.eval_instruction_without_loop() {
+                    break;
+                }
+
+                if self.at_end() {
+                    return self.accumulator;
+                }
+            }
+
+            // Restore old operation before attempt.
+            let _ = mem::replace(
+                &mut self.instructions[fix_attempt_idx].0.operation,
+                old_operation,
+            );
+
+            self.reset();
+
+            loop {
+                fix_attempt_idx += 1;
+
+                let (Instruction { operation, .. }, _) = self.instructions[fix_attempt_idx];
+
+                if matches!(operation, Operation::Jump | Operation::NoOp) {
+                    break;
+                }
+            }
         }
     }
 
@@ -49,6 +95,19 @@ impl Vm {
         *num_times_already_evaled += 1;
 
         false
+    }
+
+    fn at_end(&self) -> bool {
+        self.instruction_pointer == self.instructions.len() as i32
+    }
+
+    pub fn reset(&mut self) {
+        self.instruction_pointer = 0;
+        self.accumulator = 0;
+
+        for (_, instruction_count) in &mut self.instructions {
+            *instruction_count = 0;
+        }
     }
 }
 
@@ -129,6 +188,8 @@ acc +6"
 
         let mut vm = Vm::new(instructions);
 
-        assert_eq!(vm.accumulator_before_loop(), 5);
+        // assert_eq!(vm.accumulator_before_loop(), 5);
+        // vm.reset();
+        assert_eq!(vm.accumulator_after_fixing_program(), 8);
     }
 }
