@@ -24,9 +24,12 @@ impl Vm {
 
         loop {
             let new_operation = match self.instructions[fix_attempt_idx].0.operation {
+                Operation::Accumulate => {
+                    fix_attempt_idx += 1;
+                    continue;
+                }
                 Operation::Jump => Operation::NoOp,
                 Operation::NoOp => Operation::Jump,
-                _ => unreachable!(),
             };
 
             let old_operation = mem::replace(
@@ -35,7 +38,7 @@ impl Vm {
             );
 
             loop {
-                if self.eval_instruction_without_loop() {
+                if self.will_loop() {
                     break;
                 }
 
@@ -51,26 +54,17 @@ impl Vm {
             );
 
             self.reset();
-
-            loop {
-                fix_attempt_idx += 1;
-
-                let (Instruction { operation, .. }, _) = self.instructions[fix_attempt_idx];
-
-                if matches!(operation, Operation::Jump | Operation::NoOp) {
-                    break;
-                }
-            }
+            fix_attempt_idx += 1;
         }
     }
 
     pub fn accumulator_before_loop(&mut self) -> i32 {
-        while !self.eval_instruction_without_loop() {}
+        while !self.will_loop() {}
 
         self.accumulator
     }
 
-    fn eval_instruction_without_loop(&mut self) -> bool {
+    fn will_loop(&mut self) -> bool {
         let (
             Instruction {
                 operation,
