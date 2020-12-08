@@ -2,6 +2,7 @@ pub mod adventcoin;
 pub mod apartment;
 pub mod boarding;
 pub mod circuit;
+pub mod console;
 pub mod customs;
 pub mod expense_report;
 pub mod geology;
