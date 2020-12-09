@@ -14,3 +14,4 @@ mod parsing;
 pub mod passport;
 pub mod password;
 pub mod presents;
+pub mod xmas;
